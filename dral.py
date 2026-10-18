@@ -165,7 +165,7 @@ def run(args):
         role = "anchor" if i in anchors else "second_opinion" if i in queried else "new_image"
         probability = bank.update(i, a, b[i], outcome)
         available[i, a] = False; billed += costs[a]; role_cost[role] += float(costs[a]); queried.add(int(i))
-        records.append({"image": int(i), "source": int(a), "outcome": outcome, "cost": float(costs[a]), "billed": float(billed), "role": role, "label_information": scores[chosen][1], "source_information": scores[chosen][2], "response_nll": -float(np.log(max(probability, 1e-300)))})
+        records.append({"image": int(i), "source": int(a), "outcome": outcome, "cost": float(costs[a]), "billed": float(billed), "role": role, "label_information": scores[chosen][1], "source_information": scores[chosen][2], "response_nll": -float(np.log2(max(probability, 1e-300)))})
         if billed >= next_checkpoint or not affordable.any():
             marginal = bank.marginal()
             pred = soft_classifier(x, marginal, anchors, y, queried, test, args.train_epochs, args.seed)
@@ -174,7 +174,7 @@ def run(args):
             for j in audit:
                 for source in range(a_count):
                     probability = float(weights @ samples[:, source, b[j], y[j], potential[j, source]])
-                    nll.append(-np.log(max(probability, 1e-300)))
+                    nll.append(-np.log2(max(probability, 1e-300)))
             count = np.bincount(y[pool], minlength=k); minority = np.flatnonzero(count <= np.median(count))
             recalls = recall_score(y[test], pred, labels=np.arange(k), average=None, zero_division=0)
             curve.append({"billed": float(billed), "accuracy": accuracy_score(y[test], pred), "balanced_accuracy": balanced_accuracy_score(y[test], pred), "minority_recall": float(recalls[minority].mean()), "unresolved_fraction": float(np.mean(marginal[list(queried)].max(-1) < 1 - args.resolution)), "response_model_nll": float(np.mean(nll)), "source_entropy_fraction": float(entropy(weights)) / max(initial_entropy, 1e-12), "role_cost": role_cost.copy()})

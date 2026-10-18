@@ -69,3 +69,7 @@ The normalized area under the accuracy-cost curve uses the observed checkpoint i
 ## Implementation choices
 
 The shared frozen feature encoder and linear downstream classifier implement the paper's primary finite-bank tier. Initial anchor calibration queries all configured sources, so those anchor/source pairs are exhausted before active selection. The candidate filter is a seeded uniform subset shared in form across controls. Channel matrices and difficulty strata stay fixed during a run; response drift can be studied by preparing a different explicitly time-dependent simulator. The bank update includes refusals directly and never multiplies already-observed responses into a separately refitted channel model.
+
+## Reproduction logic conventions
+
+Source-response NLL is reported in bits per response, using log2 consistently with the manuscript tables and information utilities.
